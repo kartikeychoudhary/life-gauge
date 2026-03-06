@@ -1,0 +1,128 @@
+<div class="space-y-6">
+  <!-- Header -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Health Reports</h1>
+      <p class="text-slate-400 text-sm mt-1">Upload and manage your PDF health reports</p>
+    </div>
+    <p-button
+      label="Upload Report"
+      icon="pi pi-upload"
+      (onClick)="uploadDialogVisible = true"
+    />
+  </div>
+
+  <!-- Table -->
+  <div class="bg-slate-900 border border-slate-700/50 rounded-xl overflow-hidden">
+    <p-table
+      [value]="reports"
+      [loading]="loading"
+      [rowHover]="true"
+      styleClass="p-datatable-sm"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th class="text-slate-400">File</th>
+          <th class="text-slate-400">Report Date</th>
+          <th class="text-slate-400">Uploaded</th>
+          <th class="text-slate-400">Status</th>
+          <th class="text-slate-400 w-36">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-report>
+        <tr>
+          <td>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-file-pdf text-red-400"></i>
+              <span class="text-slate-200 text-sm truncate max-w-xs">{{ report.original_filename }}</span>
+            </div>
+          </td>
+          <td class="text-slate-300 text-sm">{{ (report.report_date | date:'dd MMM yyyy') || '—' }}</td>
+          <td class="text-slate-400 text-sm">{{ report.created_at | date:'dd MMM yyyy' }}</td>
+          <td>
+            <p-tag
+              [value]="report.status"
+              [severity]="getStatusSeverity(report.status)"
+              styleClass="text-xs capitalize"
+            />
+          </td>
+          <td>
+            <div class="flex items-center gap-1">
+              <p-button
+                icon="pi pi-eye"
+                [text]="true"
+                size="small"
+                pTooltip="View results"
+                (onClick)="viewDetail(report)"
+                [disabled]="report.status !== 'completed'"
+              />
+              <p-button
+                icon="pi pi-refresh"
+                [text]="true"
+                size="small"
+                severity="secondary"
+                pTooltip="Reprocess with AI"
+                (onClick)="reprocess(report)"
+                [disabled]="report.status === 'processing'"
+              />
+              <p-button
+                icon="pi pi-trash"
+                [text]="true"
+                size="small"
+                severity="danger"
+                pTooltip="Delete"
+                (onClick)="confirmDelete(report)"
+              />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-12">
+            <div class="flex flex-col items-center gap-3 text-slate-500">
+              <i class="pi pi-inbox text-4xl"></i>
+              <span>No reports uploaded yet</span>
+              <p-button label="Upload your first report" icon="pi pi-upload" size="small" (onClick)="uploadDialogVisible = true" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="meta.pages > 1" class="flex justify-center">
+    <div class="flex gap-2">
+      <p-button
+        icon="pi pi-chevron-left"
+        [text]="true"
+        [disabled]="meta.page === 1"
+        (onClick)="load(meta.page - 1)"
+      />
+      <span class="flex items-center text-slate-400 text-sm px-2">{{ meta.page }} / {{ meta.pages }}</span>
+      <p-button
+        icon="pi pi-chevron-right"
+        [text]="true"
+        [disabled]="meta.page === meta.pages"
+        (onClick)="load(meta.page + 1)"
+      />
+    </div>
+  </div>
+</div>
+
+<!-- Upload Dialog -->
+<app-upload-dialog
+  [visible]="uploadDialogVisible"
+  (close)="uploadDialogVisible = false"
+  (uploaded)="onUploadSuccess($event)"
+/>
+
+<!-- Report Detail -->
+<app-report-detail
+  [visible]="detailVisible"
+  [report]="selectedReport"
+  (close)="detailVisible = false"
+/>

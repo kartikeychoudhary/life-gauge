@@ -1,0 +1,62 @@
+<p-dialog
+  [visible]="visible"
+  [header]="testName"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [style]="{ width: '90vw', maxWidth: '700px' }"
+  styleClass="!bg-slate-900 !border !border-slate-700/50"
+  (onHide)="close.emit()"
+>
+  <div *ngIf="loading" class="flex justify-center py-12">
+    <p-progressSpinner strokeWidth="4" animationDuration="1s" />
+  </div>
+
+  <div *ngIf="!loading" class="space-y-6">
+
+    <!-- Chart -->
+    <div *ngIf="chartData" class="bg-slate-800/50 rounded-xl p-4">
+      <p-chart type="line" [data]="chartData" [options]="chartOptions" height="250" />
+    </div>
+
+    <!-- Table of all readings -->
+    <div>
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">All Readings</h3>
+      <p-table
+        [value]="history"
+        [sortField]="'report_date'"
+        [sortOrder]="-1"
+        styleClass="p-datatable-sm"
+        [tableStyle]="{ 'min-width': '400px' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="report_date" class="text-slate-400">Date <p-sortIcon field="report_date" /></th>
+            <th class="text-slate-400">Value</th>
+            <th class="text-slate-400">Reference</th>
+            <th class="text-slate-400">Flag</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr>
+            <td class="text-slate-300">{{ row.report_date | date:'dd MMM yyyy' }}</td>
+            <td class="text-white font-medium">
+              {{ row.value_text }}<span *ngIf="row.unit" class="text-slate-400 text-xs ml-1">{{ row.unit }}</span>
+            </td>
+            <td class="text-slate-400 text-sm">{{ row.ref_display || '—' }}</td>
+            <td>
+              <p-tag
+                [value]="row.flag"
+                [severity]="getFlagSeverity(row.flag)"
+                styleClass="text-xs capitalize"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="4" class="text-center text-slate-500 py-4">No history available</td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</p-dialog>

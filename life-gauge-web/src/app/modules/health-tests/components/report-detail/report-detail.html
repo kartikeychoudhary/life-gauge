@@ -1,0 +1,55 @@
+<p-dialog
+  [visible]="visible"
+  [header]="report?.original_filename || 'Report Detail'"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  (onHide)="close.emit()"
+>
+  <div *ngIf="loading" class="flex justify-center py-12">
+    <p-progressSpinner strokeWidth="4" />
+  </div>
+
+  <div *ngIf="!loading && report" class="space-y-6">
+    <!-- Meta -->
+    <div class="flex items-center gap-4 text-sm text-slate-400">
+      <span><i class="pi pi-calendar mr-1"></i>{{ (report.report_date | date:'dd MMM yyyy') || 'Date unknown' }}</span>
+      <span><i class="pi pi-upload mr-1"></i>{{ report.created_at | date:'dd MMM yyyy' }}</span>
+    </div>
+
+    <!-- Results by category -->
+    <div *ngFor="let group of groupedResults" class="space-y-3">
+      <h3 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+        {{ group.category }}
+        <span class="text-xs text-slate-500 font-normal">({{ group.tests.length }})</span>
+      </h3>
+      <p-table [value]="group.tests" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '500px' }">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="text-slate-400">Test</th>
+            <th class="text-slate-400">Value</th>
+            <th class="text-slate-400">Reference</th>
+            <th class="text-slate-400">Flag</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-r>
+          <tr>
+            <td class="text-slate-300 text-sm">{{ r.display_name }}</td>
+            <td class="text-white font-medium text-sm">
+              {{ r.value_text }}<span *ngIf="r.unit" class="text-slate-400 text-xs ml-1">{{ r.unit }}</span>
+            </td>
+            <td class="text-slate-400 text-sm">{{ r.ref_display || '—' }}</td>
+            <td>
+              <p-tag [value]="r.flag" [severity]="getFlagSeverity(r.flag)" styleClass="text-xs capitalize" />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div *ngIf="results.length === 0" class="text-center py-8 text-slate-500">
+      No test results found in this report.
+    </div>
+  </div>
+</p-dialog>

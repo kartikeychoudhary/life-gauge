@@ -1,0 +1,21 @@
+<app-sidebar
+  [collapsed]="sidebarCollapsed"
+  [mobileOpen]="mobileSidebarOpen"
+  (toggleCollapse)="toggleSidebar()"
+  (mobileClose)="closeMobileSidebar()"
+/>
+
+<app-header
+  [sidebarCollapsed]="sidebarCollapsed"
+  (toggleMobileSidebar)="toggleMobileSidebar()"
+/>
+
+<main
+  class="min-h-screen pt-16 transition-all duration-300 bg-slate-950"
+  [class.lg:pl-64]="!sidebarCollapsed"
+  [class.lg:pl-16]="sidebarCollapsed"
+>
+  <div class="p-6">
+    <router-outlet></router-outlet>
+  </div>
+</main>

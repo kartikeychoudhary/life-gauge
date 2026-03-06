@@ -1,0 +1,33 @@
+# Environment
+.env
+
+# Dependencies
+node_modules/
+life-gauge-api/node_modules/
+life-gauge-web/node_modules/
+
+# Build output
+life-gauge-web/dist/
+life-gauge-api/dist/
+
+# Uploads (user data)
+life-gauge-api/uploads/
+
+# Angular cache
+life-gauge-web/.angular/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+
+# Claude Code local settings (may contain credentials)
+.claude/

@@ -1,0 +1,107 @@
+<p-dialog
+  [visible]="visible"
+  header="Upload Health Report"
+  [modal]="true"
+  [closable]="!processing"
+  [draggable]="false"
+  [style]="{ width: '500px' }"
+  (onHide)="dismiss()"
+>
+
+  <!-- Processing state -->
+  <div *ngIf="processing" class="py-6 space-y-5">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <div
+        class="w-14 h-14 rounded-full flex items-center justify-center"
+        [class.bg-blue-500/20]="!processingFailed"
+        [class.bg-red-500/20]="processingFailed"
+      >
+        <i
+          class="text-2xl"
+          [class]="processingFailed ? 'pi pi-times text-red-400' : 'pi pi-microchip-ai text-blue-400'"
+        ></i>
+      </div>
+      <div>
+        <p class="font-semibold text-white">
+          {{ processingFailed ? 'Processing failed' : 'Analysing with Gemini AI...' }}
+        </p>
+        <p class="text-sm text-slate-400 mt-1">
+          {{ processingFailed ? 'Check your API key or try reprocessing later.' : 'Extracting test results from your report.' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="space-y-1.5">
+      <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+        <div
+          class="h-full rounded-full transition-all duration-500"
+          [class.bg-blue-500]="!processingFailed"
+          [class.bg-red-500]="processingFailed"
+          [style.width.%]="progressPercent"
+        ></div>
+      </div>
+      <div class="flex justify-between text-xs text-slate-500">
+        <span>{{ processingFailed ? 'Failed' : (progressPercent >= 100 ? 'Done' : 'Processing...') }}</span>
+        <span>{{ progressPercent | number:'1.0-0' }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload state -->
+  <div *ngIf="!processing" class="space-y-5 py-2">
+    <div
+      class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer"
+      [class.border-blue-500]="dragOver"
+      [class.bg-blue-500/5]="dragOver"
+      [class.border-slate-600]="!dragOver"
+      (dragover)="$event.preventDefault(); dragOver = true"
+      (dragleave)="dragOver = false"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <input #fileInput type="file" accept=".pdf" class="hidden" (change)="onFileSelect($event)" />
+
+      <div *ngIf="!selectedFile" class="flex flex-col items-center gap-3 text-slate-400">
+        <div class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
+          <i class="pi pi-upload text-xl"></i>
+        </div>
+        <div>
+          <p class="font-medium text-slate-300">Drop PDF here or click to browse</p>
+          <p class="text-sm mt-1">PDF only · Max 20 MB</p>
+        </div>
+      </div>
+
+      <div *ngIf="selectedFile" class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+          <i class="pi pi-file-pdf text-green-400 text-xl"></i>
+        </div>
+        <div>
+          <p class="font-medium text-white">{{ selectedFile.name }}</p>
+          <p class="text-sm text-slate-400 mt-1">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+        </div>
+        <button
+          class="text-xs text-red-400 hover:text-red-300"
+          (click)="$event.stopPropagation(); selectedFile = null"
+        >Remove</button>
+      </div>
+    </div>
+
+    <p class="text-xs text-slate-500 text-center">
+      The PDF text will be extracted and sent to Gemini AI for parsing.
+      Make sure you have configured your Gemini API key in Settings.
+    </p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <ng-container *ngIf="!processing">
+      <p-button label="Cancel" [text]="true" severity="secondary" (onClick)="dismiss()" />
+      <p-button
+        label="Upload & Process"
+        icon="pi pi-upload"
+        [loading]="uploading"
+        [disabled]="!selectedFile"
+        (onClick)="upload()"
+      />
+    </ng-container>
+  </ng-template>
+</p-dialog>

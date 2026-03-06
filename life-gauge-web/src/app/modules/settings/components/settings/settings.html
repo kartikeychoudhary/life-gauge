@@ -1,0 +1,132 @@
+<div class="max-w-2xl space-y-8">
+  <div>
+    <h1 class="text-2xl font-bold text-white">Settings</h1>
+    <p class="text-slate-400 text-sm mt-1">Manage your profile and LLM configuration</p>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="bg-slate-900 border border-slate-700/50 rounded-xl p-6 space-y-5">
+    <h2 class="text-base font-semibold text-slate-200 flex items-center gap-2">
+      <i class="pi pi-user text-blue-400"></i> Profile
+    </h2>
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-4">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm text-slate-400">Full Name</label>
+        <input pInputText type="text" formControlName="name" class="w-full" />
+        <small *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="text-red-400">
+          Name required (min 2 chars)
+        </small>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm text-slate-400">Email</label>
+        <input pInputText type="email" formControlName="email" class="w-full" />
+        <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="text-red-400">
+          Valid email required
+        </small>
+      </div>
+      <div class="pt-4 border-t border-slate-700/50">
+        <p-button type="submit" label="Save Profile" icon="pi pi-save" [loading]="profileLoading" [disabled]="profileForm.invalid" />
+      </div>
+    </form>
+  </div>
+
+  <!-- Password Card -->
+  <div class="bg-slate-900 border border-slate-700/50 rounded-xl p-6 space-y-5">
+    <h2 class="text-base font-semibold text-slate-200 flex items-center gap-2">
+      <i class="pi pi-lock text-blue-400"></i> Change Password
+    </h2>
+    <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="space-y-4">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm text-slate-400">Current Password</label>
+        <p-password formControlName="current_password" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm text-slate-400">New Password</label>
+        <p-password formControlName="new_password" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+        <small *ngIf="passwordForm.get('new_password')?.invalid && passwordForm.get('new_password')?.touched" class="text-red-400">
+          Min 8 characters
+        </small>
+      </div>
+      <div class="pt-4 border-t border-slate-700/50">
+        <p-button type="submit" label="Change Password" icon="pi pi-lock" [loading]="passwordLoading" [disabled]="passwordForm.invalid" />
+      </div>
+    </form>
+  </div>
+
+  <!-- LLM Config Card -->
+  <div class="bg-slate-900 border border-slate-700/50 rounded-xl p-6 space-y-5">
+    <h2 class="text-base font-semibold text-slate-200 flex items-center gap-2">
+      <i class="pi pi-microchip-ai text-blue-400"></i> AI / LLM Configuration
+    </h2>
+    <p class="text-sm text-slate-400">
+      Life Gauge uses Google Gemini to extract structured data from your PDF health reports.
+      Your API key is encrypted before storage.
+    </p>
+
+    <form [formGroup]="llmForm" (ngSubmit)="saveLlm()" class="space-y-4">
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <label class="text-sm text-slate-400">Gemini Model</label>
+          <button
+            type="button"
+            class="text-xs text-blue-400 hover:text-blue-300"
+            (click)="toggleCustomModel()"
+          >{{ useCustomModel ? 'Use preset' : 'Enter custom model' }}</button>
+        </div>
+        <p-select
+          *ngIf="!useCustomModel"
+          formControlName="llm_model"
+          [options]="llmModelOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select model"
+          styleClass="w-full"
+        />
+        <input
+          *ngIf="useCustomModel"
+          pInputText
+          type="text"
+          formControlName="llm_model"
+          placeholder="e.g. gemini-2.5-pro-exp-03-25"
+          class="w-full"
+        />
+        <small *ngIf="useCustomModel" class="text-slate-500 text-xs">Any valid Gemini model identifier from Google AI Studio</small>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <label class="text-sm text-slate-400">Gemini API Key</label>
+          <div class="flex items-center gap-2">
+            <p-tag *ngIf="hasApiKey && !showApiKeyField" value="Configured" severity="success" styleClass="text-xs" />
+            <button
+              type="button"
+              class="text-xs text-blue-400 hover:text-blue-300"
+              (click)="showApiKeyField = !showApiKeyField"
+            >{{ showApiKeyField ? 'Cancel' : (hasApiKey ? 'Change key' : 'Add key') }}</button>
+          </div>
+        </div>
+
+        <div *ngIf="showApiKeyField">
+          <p-password
+            formControlName="llm_api_key"
+            placeholder="AIzaSy..."
+            [feedback]="false"
+            [toggleMask]="true"
+            styleClass="w-full"
+            inputStyleClass="w-full"
+          />
+          <small class="text-slate-500 text-xs mt-1 block">Your key is AES-256-GCM encrypted before storage</small>
+        </div>
+
+        <div *ngIf="!showApiKeyField && !hasApiKey" class="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+          <i class="pi pi-exclamation-triangle text-yellow-400 text-sm"></i>
+          <span class="text-xs text-yellow-300">No API key configured. Reports will remain in pending state.</span>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-700/50">
+        <p-button type="submit" label="Save LLM Settings" icon="pi pi-save" [loading]="llmLoading" />
+      </div>
+    </form>
+  </div>
+</div>
