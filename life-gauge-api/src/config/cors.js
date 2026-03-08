@@ -1,5 +1,6 @@
+const ngPort = process.env.NG_PORT || '4200';
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+  origin: `http://localhost:${ngPort}`,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

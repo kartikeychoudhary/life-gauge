@@ -14,6 +14,9 @@
 
   <div *ngIf="!loading" class="space-y-6">
 
+    <!-- Description -->
+    <p *ngIf="description" class="text-sm text-slate-400 leading-relaxed">{{ description }}</p>
+
     <!-- Chart -->
     <div *ngIf="chartData" class="bg-slate-800/50 rounded-xl p-4">
       <p-chart type="line" [data]="chartData" [options]="chartOptions" height="250" />

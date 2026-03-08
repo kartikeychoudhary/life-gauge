@@ -30,6 +30,11 @@ export interface TestResult {
   report_date: string | null;
 }
 
+export interface TestHistoryResponse {
+  history: TestResult[];
+  description: string | null;
+}
+
 export interface DashboardTest extends TestResult {
   previous: TestResult | null;
 }

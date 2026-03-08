@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MainLayout } from './layout/components/main-layout/main-layout';
 import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 
 const routes: Routes = [
   {
@@ -28,6 +29,12 @@ const routes: Routes = [
         path: 'settings',
         loadChildren: () =>
           import('./modules/settings/settings-module').then((m) => m.SettingsModule),
+      },
+      {
+        path: 'app-settings',
+        canActivate: [AdminGuard],
+        loadChildren: () =>
+          import('./modules/app-settings/app-settings-module').then((m) => m.AppSettingsModule),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

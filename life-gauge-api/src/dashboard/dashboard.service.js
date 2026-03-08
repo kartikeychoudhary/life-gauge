@@ -96,7 +96,14 @@ const getTestHistory = async (userId, testKey) => {
     .where({ user_id: userId, test_key: testKey })
     .select('id', 'value_numeric', 'value_text', 'unit', 'flag', 'ref_min', 'ref_max', 'ref_display', 'report_date', 'report_id')
     .orderBy('report_date', 'asc');
-  return history;
+
+  // Fetch description from test_definitions
+  const testDef = await db('test_definitions')
+    .where('test_key', testKey)
+    .select('description')
+    .first();
+
+  return { history, description: testDef?.description || null };
 };
 
 module.exports = { getSummary, getTestHistory };

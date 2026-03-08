@@ -1,0 +1,280 @@
+/**
+ * Data migration: populate test_definitions table from the hardcoded TEST_CATEGORIES map.
+ * Display names are derived from test_key using title-casing rules.
+ */
+
+const TEST_CATEGORIES = {
+  // Hormones & Vitamins
+  dht: 'Hormones & Vitamins',
+  vit_d_25_oh: 'Hormones & Vitamins',
+  vit_b12: 'Hormones & Vitamins',
+  psa: 'Hormones & Vitamins',
+  t3_total: 'Hormones & Vitamins',
+  t4_total: 'Hormones & Vitamins',
+  tsh_ultra: 'Hormones & Vitamins',
+
+  // Cardiac, Iron & Diabetes
+  hs_crp: 'Cardiac, Iron & Diabetes',
+  iron_total: 'Cardiac, Iron & Diabetes',
+  tibc: 'Cardiac, Iron & Diabetes',
+  transferrin_sat: 'Cardiac, Iron & Diabetes',
+  uibc: 'Cardiac, Iron & Diabetes',
+  fbg: 'Cardiac, Iron & Diabetes',
+  hba1c: 'Cardiac, Iron & Diabetes',
+  abg: 'Cardiac, Iron & Diabetes',
+
+  // Lipid Profile
+  cholesterol_total: 'Lipid Profile',
+  hdl_direct: 'Lipid Profile',
+  ldl_direct: 'Lipid Profile',
+  triglycerides: 'Lipid Profile',
+  tc_hdl_ratio: 'Lipid Profile',
+  trig_hdl_ratio: 'Lipid Profile',
+  ldl_hdl_ratio: 'Lipid Profile',
+  hdl_ldl_ratio: 'Lipid Profile',
+  non_hdl: 'Lipid Profile',
+  vldl: 'Lipid Profile',
+
+  // Liver, Kidney & Electrolytes
+  amylase: 'Liver, Kidney & Electrolytes',
+  alp: 'Liver, Kidney & Electrolytes',
+  bilirubin_total: 'Liver, Kidney & Electrolytes',
+  bilirubin_direct: 'Liver, Kidney & Electrolytes',
+  bilirubin_indirect: 'Liver, Kidney & Electrolytes',
+  ggt: 'Liver, Kidney & Electrolytes',
+  sgot: 'Liver, Kidney & Electrolytes',
+  sgpt: 'Liver, Kidney & Electrolytes',
+  sgot_sgpt_ratio: 'Liver, Kidney & Electrolytes',
+  protein_total: 'Liver, Kidney & Electrolytes',
+  albumin_serum: 'Liver, Kidney & Electrolytes',
+  globulin_serum: 'Liver, Kidney & Electrolytes',
+  alb_glob_ratio: 'Liver, Kidney & Electrolytes',
+  magnesium: 'Liver, Kidney & Electrolytes',
+  ldh: 'Liver, Kidney & Electrolytes',
+  phosphorous: 'Liver, Kidney & Electrolytes',
+  sodium: 'Liver, Kidney & Electrolytes',
+  potassium: 'Liver, Kidney & Electrolytes',
+  chloride: 'Liver, Kidney & Electrolytes',
+  bun: 'Liver, Kidney & Electrolytes',
+  creatinine_serum: 'Liver, Kidney & Electrolytes',
+  bun_creat_ratio: 'Liver, Kidney & Electrolytes',
+  urea_calc: 'Liver, Kidney & Electrolytes',
+  calcium: 'Liver, Kidney & Electrolytes',
+  urea_creat_ratio: 'Liver, Kidney & Electrolytes',
+  uric_acid: 'Liver, Kidney & Electrolytes',
+  egfr: 'Liver, Kidney & Electrolytes',
+
+  // Hematology
+  esr: 'Hematology',
+  hemoglobin: 'Hematology',
+  pcv: 'Hematology',
+  rbc_total: 'Hematology',
+  mcv: 'Hematology',
+  mch: 'Hematology',
+  mchc: 'Hematology',
+  rdw_sd: 'Hematology',
+  rdw_cv: 'Hematology',
+  rdwi: 'Hematology',
+  mentzer_index: 'Hematology',
+  wbc_total: 'Hematology',
+  neutrophils_pct: 'Hematology',
+  lymphocytes_pct: 'Hematology',
+  monocytes_pct: 'Hematology',
+  eosinophils_pct: 'Hematology',
+  basophils_pct: 'Hematology',
+  ig_pct: 'Hematology',
+  nrbc_pct: 'Hematology',
+  neutrophils_abs: 'Hematology',
+  lymphocytes_abs: 'Hematology',
+  monocytes_abs: 'Hematology',
+  basophils_abs: 'Hematology',
+  eosinophils_abs: 'Hematology',
+  ig_abs: 'Hematology',
+  nrbc_abs: 'Hematology',
+  platelet_count: 'Hematology',
+  mpv: 'Hematology',
+  pdw: 'Hematology',
+  plcr: 'Hematology',
+  pct: 'Hematology',
+
+  // Urinalysis
+  urine_volume: 'Urinalysis',
+  urine_colour: 'Urinalysis',
+  urine_appearance: 'Urinalysis',
+  urine_specific_gravity: 'Urinalysis',
+  urine_ph: 'Urinalysis',
+  urine_protein: 'Urinalysis',
+  urine_glucose: 'Urinalysis',
+  urine_ketone: 'Urinalysis',
+  urine_bilirubin: 'Urinalysis',
+  urine_urobilinogen: 'Urinalysis',
+  urine_bile_salt: 'Urinalysis',
+  urine_bile_pigment: 'Urinalysis',
+  urine_blood: 'Urinalysis',
+  urine_nitrite: 'Urinalysis',
+  urine_leucocyte_esterase: 'Urinalysis',
+  urine_mucus: 'Urinalysis',
+  urine_rbc: 'Urinalysis',
+  urine_pus_cells: 'Urinalysis',
+  urine_epithelial_cells: 'Urinalysis',
+  urine_casts: 'Urinalysis',
+  urine_crystals: 'Urinalysis',
+  urine_bacteria: 'Urinalysis',
+  urine_yeast: 'Urinalysis',
+  urine_parasite: 'Urinalysis',
+};
+
+// Well-known display names for test keys
+const DISPLAY_NAMES = {
+  dht: 'DHT (Dihydrotestosterone)',
+  vit_d_25_oh: 'Vitamin D (25-OH)',
+  vit_b12: 'Vitamin B12',
+  psa: 'PSA (Prostate Specific Antigen)',
+  t3_total: 'T3 Total',
+  t4_total: 'T4 Total',
+  tsh_ultra: 'TSH Ultra Sensitive',
+  hs_crp: 'hs-CRP',
+  iron_total: 'Iron (Total)',
+  tibc: 'TIBC',
+  transferrin_sat: 'Transferrin Saturation',
+  uibc: 'UIBC',
+  fbg: 'Fasting Blood Glucose',
+  hba1c: 'HbA1c',
+  abg: 'Average Blood Glucose',
+  cholesterol_total: 'Total Cholesterol',
+  hdl_direct: 'HDL Direct',
+  ldl_direct: 'LDL Direct',
+  triglycerides: 'Triglycerides',
+  tc_hdl_ratio: 'TC/HDL Ratio',
+  trig_hdl_ratio: 'Triglyceride/HDL Ratio',
+  ldl_hdl_ratio: 'LDL/HDL Ratio',
+  hdl_ldl_ratio: 'HDL/LDL Ratio',
+  non_hdl: 'Non-HDL Cholesterol',
+  vldl: 'VLDL',
+  amylase: 'Amylase',
+  alp: 'Alkaline Phosphatase',
+  bilirubin_total: 'Total Bilirubin',
+  bilirubin_direct: 'Direct Bilirubin',
+  bilirubin_indirect: 'Indirect Bilirubin',
+  ggt: 'GGT',
+  sgot: 'SGOT (AST)',
+  sgpt: 'SGPT (ALT)',
+  sgot_sgpt_ratio: 'SGOT/SGPT Ratio',
+  protein_total: 'Total Protein',
+  albumin_serum: 'Albumin (Serum)',
+  globulin_serum: 'Globulin (Serum)',
+  alb_glob_ratio: 'A/G Ratio',
+  magnesium: 'Magnesium',
+  ldh: 'LDH',
+  phosphorous: 'Phosphorous',
+  sodium: 'Sodium',
+  potassium: 'Potassium',
+  chloride: 'Chloride',
+  bun: 'BUN',
+  creatinine_serum: 'Creatinine (Serum)',
+  bun_creat_ratio: 'BUN/Creatinine Ratio',
+  urea_calc: 'Urea (Calculated)',
+  calcium: 'Calcium',
+  urea_creat_ratio: 'Urea/Creatinine Ratio',
+  uric_acid: 'Uric Acid',
+  egfr: 'eGFR',
+  esr: 'ESR',
+  hemoglobin: 'Hemoglobin',
+  pcv: 'PCV (Hematocrit)',
+  rbc_total: 'RBC Total',
+  mcv: 'MCV',
+  mch: 'MCH',
+  mchc: 'MCHC',
+  rdw_sd: 'RDW-SD',
+  rdw_cv: 'RDW-CV',
+  rdwi: 'RDWI',
+  mentzer_index: 'Mentzer Index',
+  wbc_total: 'WBC Total',
+  neutrophils_pct: 'Neutrophils %',
+  lymphocytes_pct: 'Lymphocytes %',
+  monocytes_pct: 'Monocytes %',
+  eosinophils_pct: 'Eosinophils %',
+  basophils_pct: 'Basophils %',
+  ig_pct: 'IG %',
+  nrbc_pct: 'NRBC %',
+  neutrophils_abs: 'Neutrophils (Abs)',
+  lymphocytes_abs: 'Lymphocytes (Abs)',
+  monocytes_abs: 'Monocytes (Abs)',
+  basophils_abs: 'Basophils (Abs)',
+  eosinophils_abs: 'Eosinophils (Abs)',
+  ig_abs: 'IG (Abs)',
+  nrbc_abs: 'NRBC (Abs)',
+  platelet_count: 'Platelet Count',
+  mpv: 'MPV',
+  pdw: 'PDW',
+  plcr: 'PLCR',
+  pct: 'PCT (Plateletcrit)',
+  urine_volume: 'Urine Volume',
+  urine_colour: 'Urine Colour',
+  urine_appearance: 'Urine Appearance',
+  urine_specific_gravity: 'Urine Specific Gravity',
+  urine_ph: 'Urine pH',
+  urine_protein: 'Urine Protein',
+  urine_glucose: 'Urine Glucose',
+  urine_ketone: 'Urine Ketone',
+  urine_bilirubin: 'Urine Bilirubin',
+  urine_urobilinogen: 'Urine Urobilinogen',
+  urine_bile_salt: 'Urine Bile Salt',
+  urine_bile_pigment: 'Urine Bile Pigment',
+  urine_blood: 'Urine Blood',
+  urine_nitrite: 'Urine Nitrite',
+  urine_leucocyte_esterase: 'Urine Leucocyte Esterase',
+  urine_mucus: 'Urine Mucus',
+  urine_rbc: 'Urine RBC',
+  urine_pus_cells: 'Urine Pus Cells',
+  urine_epithelial_cells: 'Urine Epithelial Cells',
+  urine_casts: 'Urine Casts',
+  urine_crystals: 'Urine Crystals',
+  urine_bacteria: 'Urine Bacteria',
+  urine_yeast: 'Urine Yeast',
+  urine_parasite: 'Urine Parasite',
+};
+
+const CATEGORY_ORDER = [
+  'Hormones & Vitamins',
+  'Cardiac, Iron & Diabetes',
+  'Lipid Profile',
+  'Liver, Kidney & Electrolytes',
+  'Hematology',
+  'Urinalysis',
+];
+
+exports.up = async (knex) => {
+  const rows = [];
+  let sortOrder = 0;
+
+  // Group by category to maintain order within categories
+  for (const category of CATEGORY_ORDER) {
+    const keysInCategory = Object.entries(TEST_CATEGORIES)
+      .filter(([, cat]) => cat === category)
+      .map(([key]) => key);
+
+    for (const key of keysInCategory) {
+      sortOrder++;
+      rows.push({
+        test_key: key,
+        display_name: DISPLAY_NAMES[key] || key,
+        category,
+        is_active: true,
+        sort_order: sortOrder,
+      });
+    }
+  }
+
+  // Insert in batches to avoid oversized queries
+  const batchSize = 50;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    await knex('test_definitions').insert(rows.slice(i, i + batchSize));
+  }
+};
+
+exports.down = async (knex) => {
+  // Only delete the rows seeded by this migration (keys from TEST_CATEGORIES)
+  const keys = Object.keys(TEST_CATEGORIES);
+  await knex('test_definitions').whereIn('test_key', keys).delete();
+};

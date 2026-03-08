@@ -267,19 +267,121 @@ Stream closes automatically when status reaches `completed`, `failed`, or `not_f
 
 **Response 200:**
 ```json
-[
-  {
-    "id": 10,
-    "value_numeric": 2.34,
-    "value_text": "2.34",
-    "unit": "uIU/mL",
-    "flag": "normal",
-    "ref_min": 0.4,
-    "ref_max": 4.0,
-    "ref_display": "0.40 - 4.00",
-    "report_date": "2026-01-15",
-    "report_id": 1
-  }
-]
+{
+  "history": [
+    {
+      "id": 10,
+      "value_numeric": 2.34,
+      "value_text": "2.34",
+      "unit": "uIU/mL",
+      "flag": "normal",
+      "ref_min": 0.4,
+      "ref_max": 4.0,
+      "ref_display": "0.40 - 4.00",
+      "report_date": "2026-01-15",
+      "report_id": 1
+    }
+  ],
+  "description": "Thyroid-stimulating hormone secreted by the pituitary..."
+}
 ```
-Ordered by `report_date ASC`.
+`history` ordered by `report_date ASC`. `description` is from `test_definitions` table (nullable).
+
+---
+
+## Auth (additional)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/auth/signup-allowed` | No | Check if signups are enabled |
+
+### GET /auth/signup-allowed
+**Response 200:**
+```json
+{ "allowed": true }
+```
+
+---
+
+## Admin (all endpoints require Auth + Admin role)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/admin/settings` | Admin | Get app settings (key-value map) |
+| PUT | `/admin/settings` | Admin | Update a setting |
+| GET | `/admin/users` | Admin | List all users |
+| POST | `/admin/users` | Admin | Create user (force_password_change=true) |
+| PUT | `/admin/users/:id/role` | Admin | Change user role |
+| PUT | `/admin/users/:id/reset-password` | Admin | Reset user password |
+| DELETE | `/admin/users/:id` | Admin | Delete user and all data |
+| GET | `/admin/test-definitions` | Admin | List all test definitions |
+| POST | `/admin/test-definitions` | Admin | Create test definition |
+| PUT | `/admin/test-definitions/:id` | Admin | Update test definition |
+| DELETE | `/admin/test-definitions/:id` | Admin | Delete test definition |
+
+### GET /admin/settings
+**Response 200:**
+```json
+{ "allow_signups": "false" }
+```
+
+### PUT /admin/settings
+**Request:**
+```json
+{ "key": "allow_signups", "value": "true" }
+```
+**Response 200:** Updated settings object
+
+### POST /admin/users
+**Request:**
+```json
+{
+  "name": "string (required)",
+  "email": "string (required)",
+  "password": "string (required, min 8)",
+  "role": "user | admin (optional, default: user)"
+}
+```
+**Response 201:** User object
+**Note:** Created users have `force_password_change: true`
+
+### PUT /admin/users/:id/role
+**Request:**
+```json
+{ "role": "admin" }
+```
+**Response 200:** Updated user object
+
+### PUT /admin/users/:id/reset-password
+**Request:**
+```json
+{ "password": "string (required, min 8)" }
+```
+**Response 200:** `{ "message": "Password reset successfully" }`
+**Note:** Sets `force_password_change: true` on the user
+
+### DELETE /admin/users/:id
+**Response 204:** No content
+**Errors:** `409` cannot delete own account
+
+### POST /admin/test-definitions
+**Request:**
+```json
+{
+  "test_key": "string (required, lowercase snake_case)",
+  "display_name": "string (required)",
+  "category": "string (required)",
+  "unit": "string (optional)",
+  "default_ref_min": "number (optional)",
+  "default_ref_max": "number (optional)",
+  "is_active": "boolean (optional, default true)"
+}
+```
+**Response 201:** Test definition object
+
+### PUT /admin/test-definitions/:id
+**Request:** Same fields as POST (all optional)
+**Response 200:** Updated test definition object
+
+### DELETE /admin/test-definitions/:id
+**Response 204:** No content

@@ -1,14 +1,17 @@
 const bcrypt = require('bcryptjs');
 
 exports.seed = async (knex) => {
-  await knex('user_settings').del();
-  await knex('users').del();
+  // Only seed if no users exist (idempotent — safe to run on every startup)
+  const existing = await knex('users').first();
+  if (existing) return;
 
-  const hash = await bcrypt.hash('password123', 12);
+  const hash = await bcrypt.hash('admin', 12);
   const [userId] = await knex('users').insert({
-    name: 'Dev User',
-    email: 'dev@lifegauge.app',
+    name: 'admin',
+    email: 'admin',
     password_hash: hash,
+    role: 'admin',
+    force_password_change: true,
   });
   await knex('user_settings').insert({
     user_id: userId,

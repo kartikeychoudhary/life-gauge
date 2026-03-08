@@ -1,0 +1,311 @@
+<div class="p-4 max-w-6xl mx-auto">
+  <h2 class="text-2xl font-bold text-white mb-6">
+    <i class="pi pi-shield mr-2"></i>App Settings
+  </h2>
+
+  <p-tabs [(value)]="activeTab">
+    <p-tablist>
+      <p-tab value="0"><i class="pi pi-cog mr-2"></i>General</p-tab>
+      <p-tab value="1"><i class="pi pi-users mr-2"></i>User Management</p-tab>
+      <p-tab value="2"><i class="pi pi-list mr-2"></i>Test Definitions</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <!-- ─── General Tab ─── -->
+      <p-tabpanel value="0">
+        <div class="mt-4">
+          <p-card styleClass="!bg-slate-900 !border !border-slate-700/50">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-white">Allow Signups</h3>
+                <p class="text-slate-400 text-sm mt-1">
+                  When disabled, only admins can create new user accounts.
+                </p>
+              </div>
+              <p-toggleswitch [(ngModel)]="allowSignups" (onChange)="onSignupToggle()"></p-toggleswitch>
+            </div>
+          </p-card>
+        </div>
+      </p-tabpanel>
+
+      <!-- ─── User Management Tab ─── -->
+      <p-tabpanel value="1">
+        <div class="mt-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-white">Users</h3>
+            <p-button label="Add User" icon="pi pi-plus" (onClick)="openAddUser()" />
+          </div>
+
+          <p-table [value]="users" [loading]="usersLoading" styleClass="p-datatable-sm" [rowHover]="true">
+            <ng-template #header>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Force Password Change</th>
+                <th>Created</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-user>
+              <tr>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <p-tag [value]="user.role" [severity]="getRoleSeverity(user.role)"></p-tag>
+                </td>
+                <td>
+                  <p-tag
+                    [value]="user.force_password_change ? 'Yes' : 'No'"
+                    [severity]="user.force_password_change ? 'warn' : 'secondary'"
+                  ></p-tag>
+                </td>
+                <td>{{ user.created_at | date:'mediumDate' }}</td>
+                <td class="text-right">
+                  <div class="flex gap-2 justify-end">
+                    <p-button
+                      icon="pi pi-sync"
+                      [text]="true"
+                      severity="info"
+                      pTooltip="Toggle Role"
+                      (onClick)="toggleRole(user)"
+                    />
+                    <p-button
+                      icon="pi pi-key"
+                      [text]="true"
+                      severity="warn"
+                      pTooltip="Reset Password"
+                      (onClick)="openResetPassword(user)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      severity="danger"
+                      pTooltip="Delete User"
+                      (onClick)="confirmDeleteUser(user)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="6" class="text-center text-slate-400 py-8">No users found</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </p-tabpanel>
+
+      <!-- ─── Test Definitions Tab ─── -->
+      <p-tabpanel value="2">
+        <div class="mt-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-white">Test Definitions</h3>
+            <p-button label="Add Test" icon="pi pi-plus" (onClick)="openAddTest()" />
+          </div>
+
+          <p-table
+            [value]="testDefs"
+            [loading]="testDefsLoading"
+            styleClass="p-datatable-sm"
+            [rowHover]="true"
+            [paginator]="true"
+            [rows]="20"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+          >
+            <ng-template #header>
+              <tr>
+                <th pSortableColumn="test_key">Key <p-sortIcon field="test_key" /></th>
+                <th pSortableColumn="display_name">Display Name <p-sortIcon field="display_name" /></th>
+                <th pSortableColumn="category">Category <p-sortIcon field="category" /></th>
+                <th>Unit</th>
+                <th>Ref Range</th>
+                <th pSortableColumn="is_active">Active <p-sortIcon field="is_active" /></th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-def>
+              <tr>
+                <td><code class="text-blue-400 text-xs">{{ def.test_key }}</code></td>
+                <td>{{ def.display_name }}</td>
+                <td>{{ def.category }}</td>
+                <td>{{ def.unit || '—' }}</td>
+                <td>
+                  <span *ngIf="def.default_ref_min !== null || def.default_ref_max !== null">
+                    {{ def.default_ref_min ?? '—' }} – {{ def.default_ref_max ?? '—' }}
+                  </span>
+                  <span *ngIf="def.default_ref_min === null && def.default_ref_max === null" class="text-slate-500">—</span>
+                </td>
+                <td>
+                  <p-tag
+                    [value]="def.is_active ? 'Active' : 'Inactive'"
+                    [severity]="getActiveSeverity(def.is_active)"
+                  ></p-tag>
+                </td>
+                <td class="text-right">
+                  <div class="flex gap-2 justify-end">
+                    <p-button
+                      icon="pi pi-pencil"
+                      [text]="true"
+                      severity="info"
+                      pTooltip="Edit"
+                      (onClick)="openEditTest(def)"
+                    />
+                    <p-button
+                      icon="pi pi-trash"
+                      [text]="true"
+                      severity="danger"
+                      pTooltip="Delete"
+                      (onClick)="confirmDeleteTest(def)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="7" class="text-center text-slate-400 py-8">No test definitions found</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>
+
+<!-- Add User Dialog -->
+<p-dialog header="Add New User" [(visible)]="showAddUserDialog" [modal]="true" [style]="{width: '450px'}">
+  <form [formGroup]="addUserForm" (ngSubmit)="submitAddUser()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Name</label>
+      <input pInputText formControlName="name" placeholder="Full name" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Email</label>
+      <input pInputText type="email" formControlName="email" placeholder="user@example.com" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Default Password</label>
+      <p-password formControlName="password" placeholder="Min 8 characters" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+      <small class="text-slate-400">User will be prompted to change this on first login.</small>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Role</label>
+      <p-select formControlName="role" [options]="[{label:'User',value:'user'},{label:'Admin',value:'admin'}]" styleClass="w-full" />
+    </div>
+    <div class="flex justify-end gap-2 mt-2">
+      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showAddUserDialog = false" />
+      <p-button type="submit" label="Create User" icon="pi pi-check" [loading]="addUserLoading" [disabled]="addUserForm.invalid" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Reset Password Dialog -->
+<p-dialog header="Reset Password" [(visible)]="showResetPasswordDialog" [modal]="true" [style]="{width: '400px'}">
+  <form [formGroup]="resetPasswordForm" (ngSubmit)="submitResetPassword()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">New Password</label>
+      <p-password formControlName="password" placeholder="Min 8 characters" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+      <small class="text-slate-400">User will be prompted to change this on next login.</small>
+    </div>
+    <div class="flex justify-end gap-2 mt-2">
+      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showResetPasswordDialog = false" />
+      <p-button type="submit" label="Reset Password" icon="pi pi-check" severity="warn" [loading]="resetPasswordLoading" [disabled]="resetPasswordForm.invalid" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Add Test Definition Dialog -->
+<p-dialog header="Add Test Definition" [(visible)]="showAddTestDialog" [modal]="true" [style]="{width: '500px'}">
+  <form [formGroup]="addTestForm" (ngSubmit)="submitAddTest()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Test Key</label>
+      <input pInputText formControlName="test_key" placeholder="e.g. vitamin_c" class="w-full" />
+      <small class="text-slate-400">Lowercase letters, numbers, underscores only. Must start with a letter.</small>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Display Name</label>
+      <input pInputText formControlName="display_name" placeholder="e.g. Vitamin C" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Category</label>
+      <p-select formControlName="category" [options]="categoryOptions" placeholder="Select category" styleClass="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Category Order</label>
+      <input pInputText type="number" formControlName="category_order" placeholder="Display order for category" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Description</label>
+      <textarea pTextarea formControlName="description" placeholder="Medical description of the test (optional)" class="w-full" [rows]="3" [autoResize]="true"></textarea>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Unit</label>
+      <input pInputText formControlName="unit" placeholder="e.g. mg/dL (optional)" class="w-full" />
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-slate-300">Ref Min</label>
+        <input pInputText type="number" formControlName="default_ref_min" placeholder="Optional" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-slate-300">Ref Max</label>
+        <input pInputText type="number" formControlName="default_ref_max" placeholder="Optional" class="w-full" />
+      </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-2">
+      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showAddTestDialog = false" />
+      <p-button type="submit" label="Add Test" icon="pi pi-check" [loading]="addTestLoading" [disabled]="addTestForm.invalid" />
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Edit Test Definition Dialog -->
+<p-dialog header="Edit Test Definition" [(visible)]="showEditTestDialog" [modal]="true" [style]="{width: '500px'}">
+  <form [formGroup]="editTestForm" (ngSubmit)="submitEditTest()" class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Test Key</label>
+      <input pInputText formControlName="test_key" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Display Name</label>
+      <input pInputText formControlName="display_name" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Category</label>
+      <p-select formControlName="category" [options]="categoryOptions" styleClass="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Category Order</label>
+      <input pInputText type="number" formControlName="category_order" class="w-full" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Description</label>
+      <textarea pTextarea formControlName="description" class="w-full" [rows]="3" [autoResize]="true"></textarea>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label class="text-sm font-medium text-slate-300">Unit</label>
+      <input pInputText formControlName="unit" class="w-full" />
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-slate-300">Ref Min</label>
+        <input pInputText type="number" formControlName="default_ref_min" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-slate-300">Ref Max</label>
+        <input pInputText type="number" formControlName="default_ref_max" class="w-full" />
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <label class="text-sm font-medium text-slate-300">Active</label>
+      <p-toggleswitch formControlName="is_active"></p-toggleswitch>
+    </div>
+    <div class="flex justify-end gap-2 mt-2">
+      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showEditTestDialog = false" />
+      <p-button type="submit" label="Save Changes" icon="pi pi-check" [loading]="editTestLoading" [disabled]="editTestForm.invalid" />
+    </div>
+  </form>
+</p-dialog>

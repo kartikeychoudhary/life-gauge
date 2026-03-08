@@ -15,6 +15,7 @@ export class TestHistoryDialog implements OnChanges {
   @Output() close = new EventEmitter<void>();
 
   history: TestResult[] = [];
+  description: string | null = null;
   loading = false;
   chartData: any = null;
   chartOptions: any = null;
@@ -31,8 +32,9 @@ export class TestHistoryDialog implements OnChanges {
     this.loading = true;
     this.dashboardService.getTestHistory(this.testKey).subscribe({
       next: (data) => {
-        this.history = data;
-        this.buildChart(data);
+        this.history = data.history;
+        this.description = data.description;
+        this.buildChart(data.history);
         this.loading = false;
         this.cdr.detectChanges();
       },

@@ -4,7 +4,10 @@ const { encrypt, decrypt } = require('../common/encrypt');
 const { NotFoundError, UnauthorizedError, ConflictError } = require('../common/errors');
 
 const getProfile = async (userId) => {
-  const user = await db('users').where({ id: userId }).select('id', 'name', 'email', 'created_at').first();
+  const user = await db('users')
+    .where({ id: userId })
+    .select('id', 'name', 'email', 'role', 'force_password_change', 'created_at')
+    .first();
   if (!user) throw new NotFoundError('User not found');
   return user;
 };
@@ -29,7 +32,11 @@ const changePassword = async (userId, { current_password, new_password }) => {
   if (!valid) throw new UnauthorizedError('Current password is incorrect');
 
   const password_hash = await bcrypt.hash(new_password, 12);
-  await db('users').where({ id: userId }).update({ password_hash, updated_at: db.fn.now() });
+  await db('users').where({ id: userId }).update({
+    password_hash,
+    force_password_change: false,
+    updated_at: db.fn.now(),
+  });
 };
 
 const getSettings = async (userId) => {

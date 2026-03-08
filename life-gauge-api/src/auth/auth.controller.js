@@ -18,4 +18,13 @@ const login = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login };
+const checkSignupAllowed = async (req, res, next) => {
+  try {
+    const result = await authService.checkSignupAllowed();
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, checkSignupAllowed };

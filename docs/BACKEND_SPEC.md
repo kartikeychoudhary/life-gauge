@@ -46,6 +46,8 @@ life-gauge-api/src/
 | name | VARCHAR(255) NOT NULL | |
 | email | VARCHAR(255) UNIQUE NOT NULL | |
 | password_hash | VARCHAR(255) NOT NULL | bcryptjs, rounds=12 |
+| role | ENUM('user','admin') NOT NULL DEFAULT 'user' | |
+| force_password_change | BOOLEAN NOT NULL DEFAULT false | Set true when admin creates/resets password |
 | created_at | TIMESTAMP DEFAULT NOW | |
 | updated_at | TIMESTAMP DEFAULT NOW ON UPDATE | |
 
@@ -100,6 +102,30 @@ Notes: Row created automatically on user registration with nulls. `has_api_key` 
 
 Index: `(user_id, test_key, report_date)` for dashboard summary query performance.
 
+### app_settings
+| Column | Type | Notes |
+|--------|------|-------|
+| setting_key | VARCHAR(100) PK | e.g. `allow_signups` |
+| setting_value | TEXT NOT NULL | String value |
+| updated_at | TIMESTAMP | |
+
+### test_definitions
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT UNSIGNED PK AUTO_INCREMENT | |
+| test_key | VARCHAR(100) UNIQUE NOT NULL | e.g. `tsh_ultra` |
+| display_name | VARCHAR(255) NOT NULL | e.g. `TSH Ultra Sensitive` |
+| category | VARCHAR(100) NOT NULL | e.g. `Hormones & Vitamins` |
+| category_order | INT UNSIGNED NOT NULL DEFAULT 0 | Display order for categories |
+| description | TEXT | Medical description of the test |
+| unit | VARCHAR(50) | e.g. `uIU/mL` |
+| default_ref_min | DECIMAL(15,4) | |
+| default_ref_max | DECIMAL(15,4) | |
+| is_active | BOOLEAN NOT NULL DEFAULT true | Inactive tests excluded from Gemini prompt |
+| sort_order | INT UNSIGNED NOT NULL DEFAULT 0 | |
+| created_at | TIMESTAMP | |
+| updated_at | TIMESTAMP | |
+
 ## Migrations
 
 | File | Description |
@@ -108,6 +134,12 @@ Index: `(user_id, test_key, report_date)` for dashboard summary query performanc
 | `20260306000002_create_user_settings_table.js` | user_settings with AES fields |
 | `20260306000003_create_health_reports_table.js` | health_reports with status enum |
 | `20260306000004_create_health_test_results_table.js` | health_test_results with composite index |
+| `20260308000001_add_role_and_force_password_change_to_users.js` | Adds role + force_password_change to users |
+| `20260308000002_create_app_settings_table.js` | App settings key-value table |
+| `20260308000003_create_test_definitions_table.js` | Configurable test definitions |
+| `20260308000004_seed_test_definitions_from_constants.js` | Data migration: seeds test_definitions from hardcoded constants |
+| `20260308000005_add_description_and_category_order_to_test_definitions.js` | Adds description (TEXT) and category_order (INT) columns |
+| `20260308000006_populate_descriptions_and_add_missing_tests.js` | Populates descriptions, updates display names, adds 4 missing tests |
 
 All migrations implement both `up` and `down`. Run via:
 ```bash

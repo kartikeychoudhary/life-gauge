@@ -48,28 +48,32 @@ Life Gauge is a full-stack web application for logging and monitoring personal h
 ## Backend Modules
 | Module | Path | Purpose |
 |--------|------|---------|
-| `auth` | `src/auth/` | Register, login, JWT issue |
+| `auth` | `src/auth/` | Register, login, JWT issue, signup-allowed check |
 | `user` | `src/user/` | Profile update, password change, LLM settings |
 | `healthtest` | `src/healthtest/` | PDF upload, pdf-parse, Gemini parsing, result storage |
 | `dashboard` | `src/dashboard/` | Latest test values per category with previous comparison |
+| `admin` | `src/admin/` | App settings, user management, test definitions (admin only) |
 | `common` | `src/common/` | JWT helpers, encryption, pagination, error classes, constants |
 
 ## Frontend Modules
 | Module | Route | Purpose |
 |--------|-------|---------|
-| `auth` | `/auth/login`, `/auth/register` | Login and registration forms |
+| `auth` | `/auth/login`, `/auth/register`, `/auth/change-password` | Login, registration, forced password change |
 | `dashboard` | `/dashboard` | Test result cards grouped by category, history dialog |
 | `health-tests` | `/health-tests` | Report list, upload dialog, report detail dialog |
 | `settings` | `/settings` | Profile, password, LLM API key/model config |
+| `app-settings` | `/app-settings` | Admin-only: general settings, user management, test definitions |
 | `layout` | — | Collapsible sidebar + main content shell |
 
 ## Database Tables
 | Table | Purpose |
 |-------|---------|
-| `users` | User accounts |
+| `users` | User accounts with role and force_password_change |
 | `user_settings` | Per-user LLM model and encrypted API key |
 | `health_reports` | Uploaded PDF metadata + processing status |
 | `health_test_results` | Individual parsed test values per report |
+| `app_settings` | Application-wide settings (key-value) |
+| `test_definitions` | Configurable test keys, categories, display names |
 
 ## Key Design Decisions
 - Gemini processing is **async fire-and-forget**: upload returns immediately with `processing` status; results arrive asynchronously.
@@ -82,3 +86,4 @@ Life Gauge is a full-stack web application for logging and monitoring personal h
 
 ## Current Status
 - Full stack complete and functional (2026-03-06)
+- Admin role, app settings, user management, test definitions, force password change, nginx reverse proxy (2026-03-08)

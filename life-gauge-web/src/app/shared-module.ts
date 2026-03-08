@@ -26,13 +26,17 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { MessageModule } from 'primeng/message';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { FileUploadModule } from 'primeng/fileupload';
+import { TabsModule } from 'primeng/tabs';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TextareaModule } from 'primeng/textarea';
 
 const PRIMENG = [
-  ButtonModule, InputTextModule, PasswordModule, CardModule, ToastModule,
+  ButtonModule, InputTextModule, TextareaModule, PasswordModule, CardModule, ToastModule,
   DialogModule, ProgressSpinnerModule, TagModule, TooltipModule,
   ConfirmDialogModule, TableModule, ChartModule, BadgeModule,
   DividerModule, SelectModule, MultiSelectModule, AvatarModule, MenuModule,
   SkeletonModule, MessageModule, ProgressBarModule, FileUploadModule,
+  TabsModule, ToggleSwitchModule,
 ];
 
 @NgModule({

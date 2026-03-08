@@ -51,7 +51,7 @@
         />
       </form>
 
-      <p class="text-center text-slate-400 text-sm mt-4">
+      <p *ngIf="signupAllowed" class="text-center text-slate-400 text-sm mt-4">
         Don't have an account?
         <a routerLink="/auth/register" class="text-blue-400 hover:text-blue-300 ml-1">Register</a>
       </p>

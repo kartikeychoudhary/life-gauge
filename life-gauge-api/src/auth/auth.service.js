@@ -1,15 +1,23 @@
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { sign } = require('../common/jwt');
-const { ConflictError, UnauthorizedError } = require('../common/errors');
+const { ConflictError, UnauthorizedError, ForbiddenError } = require('../common/errors');
+const { isSignupAllowed } = require('../admin/admin.service');
 
 const register = async ({ name, email, password }) => {
+  // Check if signups are allowed
+  const allowed = await isSignupAllowed();
+  if (!allowed) throw new ForbiddenError('Signups are currently disabled');
+
   const existing = await db('users').where({ email }).first();
   if (existing) throw new ConflictError('Email already in use');
 
   const password_hash = await bcrypt.hash(password, 12);
   const [id] = await db('users').insert({ name, email, password_hash });
-  const user = await db('users').where({ id }).select('id', 'name', 'email').first();
+  const user = await db('users')
+    .where({ id })
+    .select('id', 'name', 'email', 'role', 'force_password_change')
+    .first();
 
   // Create default settings row
   await db('user_settings').insert({ user_id: id });
@@ -26,7 +34,21 @@ const login = async ({ email, password }) => {
   if (!valid) throw new UnauthorizedError('Invalid credentials');
 
   const token = sign({ id: user.id, email: user.email });
-  return { token, user: { id: user.id, name: user.name, email: user.email } };
+  return {
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      force_password_change: user.force_password_change,
+    },
+  };
 };
 
-module.exports = { register, login };
+// Check if signups are allowed (public endpoint)
+const checkSignupAllowed = async () => {
+  return { allowed: await isSignupAllowed() };
+};
+
+module.exports = { register, login, checkSignupAllowed };

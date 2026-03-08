@@ -5,4 +5,4 @@ RUN npm ci --omit=dev
 COPY . .
 RUN mkdir -p uploads
 EXPOSE ${API_PORT:-3000}
-CMD ["sh", "-c", "npx knex migrate:latest && node src/index.js"]
+CMD ["sh", "-c", "npx knex migrate:latest --env production && node src/index.js"]

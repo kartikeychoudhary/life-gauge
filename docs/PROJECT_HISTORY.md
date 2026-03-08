@@ -120,3 +120,64 @@ related_features:
 - Empty state when no matches: "No tests match the current filters" + "Clear filters" button that resets both `searchQuery` and `selectedFlags`
 - `MultiSelectModule` added to `SharedModule`
 - **Docs:** `docs/feature/web/dashboard.md`
+
+---
+
+### 2026-03-08 — Admin Role & App Settings Feature
+- **Scope:** API + Web + DevOps
+- **Migrations:**
+  - `20260308000001_add_role_and_force_password_change_to_users.js` — adds `role` (enum: user/admin) and `force_password_change` (boolean) to `users` table
+  - `20260308000002_create_app_settings_table.js` — key-value settings table with default `allow_signups=false`
+  - `20260308000003_create_test_definitions_table.js` — configurable test keys with display name, category, unit, ref range, active flag, sort order
+  - `20260308000004_seed_test_definitions_from_constants.js` — data migration populating test_definitions from the hardcoded `TEST_CATEGORIES` constant (100+ tests)
+- **Seed update:** Default seed user changed to `admin@lifegauge.app` with `role=admin`, `force_password_change=true`
+- **API changes:**
+  - `GET /api/auth/signup-allowed` — public endpoint returning `{ allowed: boolean }`
+  - `POST /api/auth/register` — now checks `allow_signups` setting; returns 403 if disabled
+  - `POST /api/auth/login` — response now includes `role` and `force_password_change`
+  - `GET /api/users/profile` — response now includes `role` and `force_password_change`
+  - `PUT /api/users/password` — clears `force_password_change` flag on success
+  - Admin endpoints (all require auth + admin role):
+    - `GET /api/admin/settings` — get app settings
+    - `PUT /api/admin/settings` — update a setting by key
+    - `GET /api/admin/users` — list all users
+    - `POST /api/admin/users` — create user with default password (force_password_change=true)
+    - `PUT /api/admin/users/:id/role` — toggle user role
+    - `PUT /api/admin/users/:id/reset-password` — reset password (sets force_password_change=true)
+    - `DELETE /api/admin/users/:id` — delete user and all their data
+    - `GET /api/admin/test-definitions` — list all test definitions
+    - `POST /api/admin/test-definitions` — add a new test definition
+    - `PUT /api/admin/test-definitions/:id` — edit test definition
+    - `DELETE /api/admin/test-definitions/:id` — delete test definition
+- **Backend middleware:** `adminMiddleware.js` — checks `req.user.id` has `role=admin` in DB
+- **Gemini integration updated:** Prompt now built dynamically from `test_definitions` table (active tests only); category mapping also from DB
+- **Frontend:**
+  - `User` model extended with `role` and `force_password_change`
+  - `AdminService` — HTTP client for all admin endpoints
+  - `AdminGuard` — protects `/app-settings` route (admin-only)
+  - `AppSettingsModule` — 3-tab layout (General, User Management, Test Definitions):
+    - General tab: toggle switch for signup control
+    - User Management tab: user table with add/edit-role/reset-password/delete actions
+    - Test Definitions tab: paginated table with add/edit/delete; category select, test key validation
+  - `ChangePassword` component at `/auth/change-password` — forced password change page
+  - `AuthGuard` updated to redirect to change-password if `force_password_change=true`
+  - Login component redirects to change-password when flag is set
+  - Login/Register check `signup-allowed` API; register link hidden when signups disabled
+  - Sidebar dynamically shows "App Settings" link for admin users only
+  - `TabsModule` and `ToggleSwitchModule` added to `SharedModule`
+- **Docker/Nginx:**
+  - Created `life-gauge-web/Dockerfile` — multi-stage build (Node 20 → nginx:alpine)
+  - Created `life-gauge-web/nginx.conf` — serves Angular SPA + proxies `/api/` to backend container
+  - Updated `docker-compose.yml` — API no longer exposed externally (uses `expose` instead of `ports`); web container maps `NG_PORT:80`; API_PORT passed as env to nginx for `proxy_pass`
+- **Docs:** `docs/feature/api/admin.md`, `docs/feature/web/app-settings.md`
+
+---
+
+### 2026-03-08 — Test Definitions: Descriptions & Missing Tests
+- **Scope:** API + Web
+- **Migrations:**
+  - `20260308000005` — adds `description` (TEXT) and `category_order` (INT) columns to `test_definitions`
+  - `20260308000006` — populates descriptions for all 107 existing tests, updates display names, adds 4 missing tests (`apo_a1`, `apo_b`, `apo_b_a1_ratio`, `avg_blood_glucose`)
+- **API changes:** `GET /api/dashboard/test/:key/history` now returns `{ history: [...], description: string | null }` instead of flat array
+- **Frontend:** Test history dialog shows medical description below the header, above the chart
+- **Total test definitions:** 111

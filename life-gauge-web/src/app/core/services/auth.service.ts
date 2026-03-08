@@ -39,6 +39,10 @@ export class AuthService {
     );
   }
 
+  checkSignupAllowed(): Observable<{ allowed: boolean }> {
+    return this.http.get<{ allowed: boolean }>(`${environment.apiBaseUrl}/auth/signup-allowed`);
+  }
+
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);

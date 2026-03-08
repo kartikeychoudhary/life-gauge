@@ -26,4 +26,6 @@ router.post(
   controller.login
 );
 
+router.get('/signup-allowed', controller.checkSignupAllowed);
+
 module.exports = router;

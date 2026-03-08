@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -10,7 +10,7 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
-export class Register {
+export class Register implements OnInit {
   form: FormGroup;
   loading = false;
 
@@ -24,6 +24,22 @@ export class Register {
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
+    });
+  }
+
+  ngOnInit(): void {
+    this.authService.checkSignupAllowed().subscribe({
+      next: (res) => {
+        if (!res.allowed) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Signups Disabled',
+            detail: 'Registration is currently disabled. Contact an administrator.',
+          });
+          this.router.navigate(['/auth/login']);
+        }
+      },
+      error: () => this.router.navigate(['/auth/login']),
     });
   }
 

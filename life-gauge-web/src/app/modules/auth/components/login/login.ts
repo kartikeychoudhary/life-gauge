@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -10,9 +10,10 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
+export class Login implements OnInit {
   form: FormGroup;
   loading = false;
+  signupAllowed = false;
 
   constructor(
     private fb: FormBuilder,
@@ -26,11 +27,24 @@ export class Login {
     });
   }
 
+  ngOnInit(): void {
+    this.authService.checkSignupAllowed().subscribe({
+      next: (res) => { this.signupAllowed = res.allowed; },
+      error: () => { this.signupAllowed = false; },
+    });
+  }
+
   submit(): void {
     if (this.form.invalid) return;
     this.loading = true;
     this.authService.login(this.form.value).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: (res) => {
+        if (res.user.force_password_change) {
+          this.router.navigate(['/auth/change-password']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      },
       error: (err) => {
         this.loading = false;
         this.messageService.add({

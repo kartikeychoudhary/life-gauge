@@ -4,12 +4,24 @@ const pdfParse = require('pdf-parse');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const db = require('../config/db');
 const { getDecryptedApiKey } = require('../user/user.service');
-const { TEST_CATEGORIES } = require('../common/constants');
 const { REPORT_STATUS } = require('../common/constants');
 const { NotFoundError, AppError } = require('../common/errors');
 const { paginate, paginationMeta } = require('../common/pagination');
 
-const GEMINI_PROMPT = (rawText) => `
+/**
+ * Load active test definitions from DB and build the Gemini prompt dynamically.
+ */
+const getActiveTestDefinitions = async () => {
+  return db('test_definitions').where({ is_active: true }).orderBy('sort_order', 'asc');
+};
+
+const buildGeminiPrompt = (rawText, testDefs) => {
+  const testKeyList = testDefs.map((t) => t.test_key).join(', ');
+  const testKeyDisplayHints = testDefs
+    .map((t) => `${t.test_key} → "${t.display_name}"`)
+    .join('\n');
+
+  return `
 You are a medical data parser. Extract all health test results from the following lab report text and return them as a JSON object.
 
 The JSON must have this exact structure:
@@ -32,12 +44,10 @@ The JSON must have this exact structure:
 }
 
 Use ONLY the following test_keys (map from the display name in the report):
-dht, vit_d_25_oh, vit_b12, psa, t3_total, t4_total, tsh_ultra,
-hs_crp, iron_total, tibc, transferrin_sat, uibc, fbg, hba1c, abg,
-cholesterol_total, hdl_direct, ldl_direct, triglycerides, tc_hdl_ratio, trig_hdl_ratio, ldl_hdl_ratio, hdl_ldl_ratio, non_hdl, vldl,
-amylase, alp, bilirubin_total, bilirubin_direct, bilirubin_indirect, ggt, sgot, sgpt, sgot_sgpt_ratio, protein_total, albumin_serum, globulin_serum, alb_glob_ratio, magnesium, ldh, phosphorous, sodium, potassium, chloride, bun, creatinine_serum, bun_creat_ratio, urea_calc, calcium, urea_creat_ratio, uric_acid, egfr,
-esr, hemoglobin, pcv, rbc_total, mcv, mch, mchc, rdw_sd, rdw_cv, rdwi, mentzer_index, wbc_total, neutrophils_pct, lymphocytes_pct, monocytes_pct, eosinophils_pct, basophils_pct, ig_pct, nrbc_pct, neutrophils_abs, lymphocytes_abs, monocytes_abs, basophils_abs, eosinophils_abs, ig_abs, nrbc_abs, platelet_count, mpv, pdw, plcr, pct,
-urine_volume, urine_colour, urine_appearance, urine_specific_gravity, urine_ph, urine_protein, urine_glucose, urine_ketone, urine_bilirubin, urine_urobilinogen, urine_bile_salt, urine_bile_pigment, urine_blood, urine_nitrite, urine_leucocyte_esterase, urine_mucus, urine_rbc, urine_pus_cells, urine_epithelial_cells, urine_casts, urine_crystals, urine_bacteria, urine_yeast, urine_parasite
+${testKeyList}
+
+Test key to display name mapping (use these to identify tests in the report):
+${testKeyDisplayHints}
 
 Only include tests that are actually present in the report. Return only the JSON object, no extra text.
 
@@ -46,6 +56,7 @@ Lab Report Text:
 ${rawText}
 ---
 `;
+};
 
 const parseGeminiResponse = (text) => {
   const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -118,9 +129,17 @@ const uploadAndProcess = async (userId, file) => {
 
 const processWithGemini = async (userId, reportId, rawText, apiKey, model) => {
   try {
+    // Load test definitions from DB for prompt and category mapping
+    const testDefs = await getActiveTestDefinitions();
+    const categoryMap = {};
+    for (const def of testDefs) {
+      categoryMap[def.test_key] = def.category;
+    }
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const geminiModel = genAI.getGenerativeModel({ model });
-    const result = await geminiModel.generateContent(GEMINI_PROMPT(rawText));
+    const prompt = buildGeminiPrompt(rawText, testDefs);
+    const result = await geminiModel.generateContent(prompt);
     const responseText = result.response.text();
 
     const parsed = parseGeminiResponse(responseText);
@@ -149,7 +168,7 @@ const processWithGemini = async (userId, reportId, rawText, apiKey, model) => {
           user_id: userId,
           test_key: key,
           display_name: test.display_name,
-          category: TEST_CATEGORIES[key] || 'Other',
+          category: categoryMap[key] || 'Other',
           value_numeric: val,
           value_text: test.value_text,
           unit: test.unit || null,
