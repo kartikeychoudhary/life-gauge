@@ -98,7 +98,7 @@ docker compose down
 docker compose down -v
 ```
 
-Open `http://localhost:<NG_PORT>` (default from `.env`).
+Open `http://localhost:<NG_PORT>` (default from `.env`). Default admin credentials: `admin@lifegauge.local` / `admin` (you'll be prompted to change the password on first login).
 
 ---
 
@@ -135,7 +135,7 @@ Or use `latest`:
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-Open `http://localhost:<NG_PORT>` (default `4200`).
+Open `http://localhost:<NG_PORT>` (default `4200`). Default admin credentials: `admin@lifegauge.local` / `admin` (you'll be prompted to change the password on first login).
 
 **Docker Hub images:**
 - [`kartikey31choudhary/life-gauge-api`](https://hub.docker.com/r/kartikey31choudhary/life-gauge-api)
