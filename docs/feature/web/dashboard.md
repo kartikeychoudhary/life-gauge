@@ -1,7 +1,7 @@
 ---
 title: "Dashboard — Web"
 module: "web"
-date: "2026-03-07"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - health-tests
@@ -132,7 +132,10 @@ Selector: `app-test-history-dialog`
 
 **Lifecycle:** `ngOnChanges` — when `visible` transitions to `true` and `testKey` is set, calls `loadHistory()`.
 
-**`loadHistory()`:** Calls `DashboardService.getTestHistory(testKey)`. On success, builds chart data and calls `cdr.detectChanges()`.
+**State (additional):**
+- `description: string | null = null` — medical description from `test_definitions` table
+
+**`loadHistory()`:** Calls `DashboardService.getTestHistory(testKey)`. Response is `TestHistoryResponse`; destructures `data.history` and `data.description`. On success, builds chart data and calls `cdr.detectChanges()`.
 
 **`buildChart(data)`:**
 - Filters records to numeric values only
@@ -144,6 +147,7 @@ Selector: `app-test-history-dialog`
 
 **Template:**
 - `p-dialog` modal (header = testName, width ~800px)
+- Test description paragraph (`*ngIf="description"`) shown below header, above chart — `text-sm text-slate-400 leading-relaxed`
 - Line chart (`p-chart` type=`"line"`) shown when `chartData` is not null
 - "No numeric data" message when all values are text
 - History table: columns = Date, Value, Unit, Flag, Reference Range
@@ -160,7 +164,7 @@ Selector: `app-test-history-dialog`
 | Method | Endpoint | Returns |
 |--------|----------|---------|
 | `getSummary()` | GET `/dashboard/summary` | `Observable<DashboardCategory[]>` |
-| `getTestHistory(key)` | GET `/dashboard/test/:key/history` | `Observable<TestResult[]>` |
+| `getTestHistory(key)` | GET `/dashboard/test/:key/history` | `Observable<TestHistoryResponse>` |
 
 ---
 
@@ -205,6 +209,11 @@ interface TestResult {
   ref_display: string;
   report_date: string;
   report_id: number;
+}
+
+interface TestHistoryResponse {
+  history: TestResult[];
+  description: string | null;
 }
 ```
 

@@ -1,7 +1,7 @@
 ---
 title: "Project Summary"
 module: "general"
-date: "2026-03-06"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - authentication
@@ -87,3 +87,8 @@ Life Gauge is a full-stack web application for logging and monitoring personal h
 ## Current Status
 - Full stack complete and functional (2026-03-06)
 - Admin role, app settings, user management, test definitions, force password change, nginx reverse proxy (2026-03-08)
+- Test definitions enriched with descriptions (111 tests) and category_order; dashboard history dialog shows test descriptions (2026-03-08)
+- Docker improvements: MySQL retry loop, production env default, DB_PORT isolation for internal networking (2026-03-09)
+- Simplified `.env`: removed `FRONTEND_URL` and `NG_API_BASE_URL`; CORS derived from `NG_PORT`; `NODE_ENV` optional (defaults to production) (2026-03-09)
+- Default admin user created via idempotent migration (admin/admin, force_password_change=true) (2026-03-09)
+- Angular `fileReplacements` in `angular.json` ensures production builds use `environment.prod.ts` (2026-03-09)

@@ -1,7 +1,7 @@
 ---
 title: "App Settings Frontend Feature"
 module: "web"
-date: "2026-03-08"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - authentication
@@ -48,9 +48,10 @@ Admin-only module for managing application settings, users, and test definitions
 ## Tab: Test Definitions
 - Paginated PrimeNG Table (20 per page) with sortable columns
 - Shows: test_key, display_name, category, unit, ref range, active status
-- Add Test dialog: test_key (snake_case pattern), display_name, category (select), unit, ref min/max
-- Edit Test dialog: all fields + is_active toggle
+- Add Test dialog: test_key (snake_case pattern), display_name, category (select), unit, ref min/max, category_order (number), description (textarea)
+- Edit Test dialog: all fields + is_active toggle + category_order + description
 - Delete confirmation via `p-confirmDialog`
+- `TextareaModule` from `primeng/textarea` added to `SharedModule` for description field (`pTextarea` directive)
 
 ## Force Password Change Flow
 1. Login API returns `force_password_change` flag in user object
@@ -79,3 +80,4 @@ Admin-only module for managing application settings, users, and test definitions
 - `p-button` with text mode for action icons
 - `p-password` for password inputs
 - `p-confirmDialog` for delete confirmations
+- `pTextarea` (TextareaModule) for test definition description field

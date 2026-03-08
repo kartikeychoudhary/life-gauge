@@ -1,7 +1,7 @@
 ---
 title: "Project History"
 module: "general"
-date: "2026-03-07"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - authentication
@@ -181,3 +181,23 @@ related_features:
 - **API changes:** `GET /api/dashboard/test/:key/history` now returns `{ history: [...], description: string | null }` instead of flat array
 - **Frontend:** Test history dialog shows medical description below the header, above the chart
 - **Total test definitions:** 111
+
+---
+
+### 2026-03-09 — Docker, Environment & Admin User Improvements
+- **Scope:** API + Web + DevOps
+- **Migrations:**
+  - `20260308000007_seed_default_admin_user.js` — idempotent migration creating default admin user (admin/admin, force_password_change=true) if no users exist
+- **Docker fixes:**
+  - `DB_PORT: 3306` override added to API container in docker-compose.yml (host DB_PORT from .env was leaking into container, causing ECONNREFUSED on non-standard port)
+  - MySQL retry loop in API command: `until npx knex migrate:latest --env production; do sleep 3; done` (mysqladmin ping healthcheck passes before MySQL accepts TCP connections)
+  - Knex CLI now uses `--env production` flag explicitly
+- **Environment simplification:**
+  - Removed `FRONTEND_URL` and `NG_API_BASE_URL` from `.env` / `.env.example`
+  - CORS origin now derived from `NG_PORT` env var: `http://localhost:${NG_PORT}`
+  - `NODE_ENV` commented out (optional); Knex defaults to `production` environment
+  - `config/db.js` defaults to `production` instead of `development`
+- **Angular production build fix:**
+  - Added `fileReplacements` to `angular.json` production configuration so `@angular/build:application` builder swaps `environment.ts` → `environment.prod.ts`
+- **Seed file update:** `seeds/01_seed_users.js` made idempotent (skips if users exist), credentials changed to admin/admin
+- **Docs:** Updated all docs to reflect changes

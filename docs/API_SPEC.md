@@ -1,7 +1,7 @@
 ---
 title: "API Specification"
 module: "api"
-date: "2026-03-06"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - authentication
@@ -374,13 +374,15 @@ Stream closes automatically when status reaches `completed`, `failed`, or `not_f
   "unit": "string (optional)",
   "default_ref_min": "number (optional)",
   "default_ref_max": "number (optional)",
-  "is_active": "boolean (optional, default true)"
+  "is_active": "boolean (optional, default true)",
+  "description": "string (optional) — medical description of the test",
+  "category_order": "number (optional, default 0) — display order for categories"
 }
 ```
 **Response 201:** Test definition object
 
 ### PUT /admin/test-definitions/:id
-**Request:** Same fields as POST (all optional)
+**Request:** Same fields as POST (all optional, includes `description` and `category_order`)
 **Response 200:** Updated test definition object
 
 ### DELETE /admin/test-definitions/:id

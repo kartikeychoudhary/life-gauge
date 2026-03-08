@@ -1,7 +1,7 @@
 ---
 title: "Backend Specification"
 module: "api"
-date: "2026-03-06"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - authentication
@@ -20,7 +20,7 @@ life-gauge-api/src/
 ├── config/
 │   ├── db.js             — Knex instance
 │   ├── env.js            — dotenv loader (path: ../../../.env)
-│   └── cors.js           — CORS config using FRONTEND_URL env var
+│   └── cors.js           — CORS config derived from NG_PORT env var
 ├── middleware/
 │   ├── authMiddleware.js — JWT verify, attaches req.user
 │   ├── errorHandler.js   — Maps custom error classes to HTTP codes
@@ -140,12 +140,15 @@ Index: `(user_id, test_key, report_date)` for dashboard summary query performanc
 | `20260308000004_seed_test_definitions_from_constants.js` | Data migration: seeds test_definitions from hardcoded constants |
 | `20260308000005_add_description_and_category_order_to_test_definitions.js` | Adds description (TEXT) and category_order (INT) columns |
 | `20260308000006_populate_descriptions_and_add_missing_tests.js` | Populates descriptions, updates display names, adds 4 missing tests |
+| `20260308000007_seed_default_admin_user.js` | Idempotent: creates default admin user (admin/admin) if no users exist |
 
 All migrations implement both `up` and `down`. Run via:
 ```bash
 cd life-gauge-api
-npx knex migrate:latest
+npx knex migrate:latest --env production
 ```
+
+Note: Knex defaults to `production` environment. The `--env production` flag is explicit but optional when `NODE_ENV` is unset (db.js defaults to production).
 
 ## API Key Encryption (`common/encrypt.js`)
 - Algorithm: **AES-256-GCM**
@@ -236,8 +239,8 @@ Validation errors from `express-validator` return 422 with an `errors` array.
 | `JWT_SECRET` | jwt.js, encrypt.js | JWT signing key + AES key derivation |
 | `JWT_EXPIRY` | jwt.js | Token expiry (e.g. `24h`) |
 | `API_PORT` | index.js | HTTP server port (default 3000) |
-| `FRONTEND_URL` | cors.js | Allowed CORS origin |
+| `NG_PORT` | cors.js | Frontend port; CORS origin = `http://localhost:${NG_PORT}` (default 4200) |
 | `UPLOAD_DIR` | healthtest.routes.js | Upload directory path |
 | `MAX_FILE_SIZE_MB` | healthtest.routes.js | Max upload size |
 | `ENCRYPTION_KEY` | encrypt.js | Optional explicit AES key (falls back to SHA-256 of JWT_SECRET) |
-| `NODE_ENV` | various | `development` / `production` |
+| `NODE_ENV` | various | Optional. `production` (default) / `development` |

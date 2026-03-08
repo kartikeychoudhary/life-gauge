@@ -1,7 +1,7 @@
 ---
 title: "Admin API Feature"
 module: "api"
-date: "2026-03-08"
+date: "2026-03-09"
 status: "completed"
 related_features:
   - authentication
@@ -46,6 +46,9 @@ Admin-only API module for managing application settings, users, and test definit
 - `20260308000002` — creates `app_settings` table with default `allow_signups=false`
 - `20260308000003` — creates `test_definitions` table
 - `20260308000004` — data migration seeding test_definitions from hardcoded constants
+- `20260308000005` — adds `description` (TEXT) and `category_order` (INT) columns to `test_definitions`
+- `20260308000006` — populates descriptions for all 107 tests, updates display names, inserts 4 missing tests (`apo_a1`, `apo_b`, `apo_b_a1_ratio`, `avg_blood_glucose`); total 111 tests
+- `20260308000007` — idempotent migration: creates default admin user (admin/admin, `force_password_change=true`) if no users exist in the DB; also creates associated `user_settings` row
 
 ## Signup Control
 - `POST /api/auth/register` checks `app_settings.allow_signups`; returns 403 if `false`
