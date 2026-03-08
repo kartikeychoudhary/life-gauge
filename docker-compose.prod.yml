@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - life_gauge_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: kartikey31choudhary/life-gauge-api:${LIFE_GAUGE_VERSION:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+    expose:
+      - "${API_PORT}"
+    volumes:
+      - life_gauge_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Waiting for MySQL to accept connections...';
+        until npx knex migrate:latest --env production; do
+          echo 'MySQL not ready, retrying in 3s...';
+          sleep 3;
+        done;
+        echo 'Migrations complete. Starting server...';
+        node src/index.js
+      "
+
+  web:
+    image: kartikey31choudhary/life-gauge-web:${LIFE_GAUGE_VERSION:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      API_PORT: ${API_PORT}
+    ports:
+      - "${NG_PORT}:80"
+    depends_on:
+      - api
+
+volumes:
+  life_gauge_db_data:
+  life_gauge_uploads:
