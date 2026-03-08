@@ -1,6 +1,6 @@
 {
   "name": "life-gauge-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Life Gauge backend API",
   "main": "src/index.js",
   "scripts": {
