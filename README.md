@@ -2,6 +2,38 @@
 
 A full-stack web application for logging and monitoring personal health reports. Upload PDF health reports and let Google Gemini AI extract structured test data — then track trends, compare results, and monitor your health over time.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Dashboard](screenshots/dashboard.png) | ![Test History](screenshots/test-history-dialog.png) |
+| Dashboard — test results by category | Test History — trends with reference ranges |
+| ![Health Reports](screenshots/health_tests-reports.png) | ![Upload](screenshots/health_tests-upload.png) |
+| Health Reports — uploaded PDF list | Upload — drag & drop PDF upload |
+| ![Settings](screenshots/settings.png) | ![App Settings](screenshots/admin_app-settings_general.png) |
+| User Settings | Admin — General Settings |
+| ![User Management](screenshots/admin_app-settings_user-management.png) | ![Test Definitions](screenshots/admin_app-settings_tests.png) |
+| Admin — User Management | Admin — Test Definitions |
+| ![Add Test](screenshots/admin_app-settings_add-test.png) | |
+| Admin — Add/Edit Test Definition | |
+
+---
+
+> **Important: Google Gemini API Key Required**
+>
+> This application uses **Google Gemini AI** to parse uploaded health report PDFs and extract structured test data. Without a Gemini API key, the core upload and parsing functionality will not work.
+>
+> **How to get a Gemini API key:**
+> 1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+> 2. Sign in with your Google account
+> 3. Click **"Create API Key"** and select or create a Google Cloud project
+> 4. Copy the generated API key
+> 5. In Life Gauge, go to **Settings > LLM Configuration** and paste the API key
+>
+> The free tier of Gemini API provides generous usage limits sufficient for personal health report parsing. The API key is encrypted (AES-256-GCM) before being stored in the database.
+
+---
+
 ## Features
 
 - **PDF Upload & AI Parsing** — Upload health report PDFs; Google Gemini extracts individual test values into structured data
