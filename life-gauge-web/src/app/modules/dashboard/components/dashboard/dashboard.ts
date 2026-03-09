@@ -45,7 +45,7 @@ export class Dashboard implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private messageService: MessageService,
-    private cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {

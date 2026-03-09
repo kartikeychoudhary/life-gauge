@@ -29,6 +29,8 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { TabsModule } from 'primeng/tabs';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TextareaModule } from 'primeng/textarea';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 const PRIMENG = [
   ButtonModule, InputTextModule, TextareaModule, PasswordModule, CardModule, ToastModule,
@@ -36,7 +38,7 @@ const PRIMENG = [
   ConfirmDialogModule, TableModule, ChartModule, BadgeModule,
   DividerModule, SelectModule, MultiSelectModule, AvatarModule, MenuModule,
   SkeletonModule, MessageModule, ProgressBarModule, FileUploadModule,
-  TabsModule, ToggleSwitchModule,
+  TabsModule, ToggleSwitchModule, IconFieldModule, InputIconModule,
 ];
 
 @NgModule({

@@ -17,16 +17,16 @@
 
   <!-- Search + flag filter -->
   <div *ngIf="!loading && categories.length > 0" class="flex gap-3">
-    <div class="relative flex-1">
-      <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
+    <p-iconfield class="flex-1">
+      <p-inputicon styleClass="pi pi-search" />
       <input
         pInputText
         type="text"
         [(ngModel)]="searchQuery"
         placeholder="Search tests by name or key..."
-        class="w-full pl-9"
+        class="w-full"
       />
-    </div>
+    </p-iconfield>
     <p-multiselect
       [(ngModel)]="selectedFlags"
       [options]="flagOptions"
@@ -35,6 +35,8 @@
       placeholder="All"
       [showClear]="true"
       [style]="{ minWidth: '180px' }"
+      (onChange)="cdr.detectChanges()"
+      (onClear)="selectedFlags = []; cdr.detectChanges()"
     >
       <ng-template pTemplate="item" let-opt>
         <div class="flex items-center gap-2">
